@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 3rem auto; padding: 0 1rem; }
+    input, select, button { font-size: 1rem; padding: .5rem; margin: .25rem 0; width: 100%; box-sizing: border-box; }
+    #resultado { margin-top: 1rem; font-weight: bold; word-break: break-all; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Calculadora</h1>
+  <input id="a" type="number" min="-99999" max="99999" step="1" placeholder="Número A (-99999 a 99999)">
+  <select id="op">
+    <option value="suma">Suma (+)</option>
+    <option value="resta">Resta (−)</option>
+    <option value="multiplicacion">Multiplicación (×)</option>
+    <option value="potencia">Potencia (^)</option>
+  </select>
+  <input id="b" type="number" min="-99999" max="99999" step="1" placeholder="Número B (-99999 a 99999)">
+  <button id="calc">Calcular</button>
+  <div id="resultado"></div>
+
+  <script>
+    // Requiere el backend en marcha: java Calculadora (puerto 8080)
+    document.getElementById("calc").addEventListener("click", async () => {
+      const a = document.getElementById("a").value;
+      const b = document.getElementById("b").value;
+      const op = document.getElementById("op").value;
+      const out = document.getElementById("resultado");
+      out.className = "";
+      try {
+        const r = await fetch(`http://localhost:8080/calcular?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}&op=${op}`);
+        const d = await r.json();
+        if (d.error) { out.className = "error"; out.textContent = d.error; }
+        else {
+          const txt = d.resultado;
+          out.textContent = "Resultado: " + (txt.length > 300 ? txt.slice(0, 300) + "… (" + txt.length + " dígitos)" : txt);
+        }
+      } catch (e) {
+        out.className = "error";
+        out.textContent = "No se pudo conectar con el backend (¿está en marcha?)";
+      }
+    });
+  </script>
+</body>
+</html>
